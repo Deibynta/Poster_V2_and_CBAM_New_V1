@@ -6,6 +6,7 @@ from collections import namedtuple
 import math
 import pdb
 from models.cbam import CBAM
+import torch.nn as nn
 
 
 ##################################  Original Arcface Model #############################################################
@@ -106,40 +107,40 @@ def get_block(in_channel, depth, num_units, stride=2):
 
 def get_blocks(num_layers):
     if num_layers == 50:
+        # Initialize blocks1, blocks2, blocks3 first
         blocks1 = [
             get_block(in_channel=64, depth=64, num_units=3),
-            # get_block(in_channel=64, depth=128, num_units=4),
-            # get_block(in_channel=128, depth=256, num_units=14),
-            # get_block(in_channel=256, depth=512, num_units=3)
         ]
         blocks2 = [
-            # get_block(in_channel=64, depth=64, num_units=3),
             get_block(in_channel=64, depth=128, num_units=4),
-            # get_block(in_channel=128, depth=256, num_units=14),
-            # get_block(in_channel=256, depth=512, num_units=3)
         ]
         blocks3 = [
-            # get_block(in_channel=64, depth=64, num_units=3),
-            # get_block(in_channel=64, depth=128, num_units=4),
             get_block(in_channel=128, depth=256, num_units=14),
-            # get_block(in_channel=256, depth=512, num_units=3)
         ]
 
     elif num_layers == 100:
-        blocks = [
+        return [
             get_block(in_channel=64, depth=64, num_units=3),
             get_block(in_channel=64, depth=128, num_units=13),
             get_block(in_channel=128, depth=256, num_units=30),
             get_block(in_channel=256, depth=512, num_units=3)
         ]
+    
     elif num_layers == 152:
-        blocks = [
+        return [
             get_block(in_channel=64, depth=64, num_units=3),
             get_block(in_channel=64, depth=128, num_units=8),
             get_block(in_channel=128, depth=256, num_units=36),
             get_block(in_channel=256, depth=512, num_units=3)
         ]
+
+    # Flatten blocks to avoid nested lists
+    blocks1 = [b for sublist in blocks1 for b in sublist]
+    blocks2 = [b for sublist in blocks2 for b in sublist]
+    blocks3 = [b for sublist in blocks3 for b in sublist]
+
     return blocks1, blocks2, blocks3
+
 
 
 class Backbone(Module):
@@ -156,6 +157,8 @@ class Backbone(Module):
         self.input_layer = nn.Sequential(nn.Conv2d(3, 64, (3, 3), 1, 1, bias=False),
                                          nn.BatchNorm2d(64),
                                          nn.PReLU(64))
+        print("blocks1:", blocks1)
+        print("blocks1 type:", type(blocks1))
         self.body1 = nn.Sequential(*[unit_module(b.in_channel, b.depth, b.stride) for b in blocks1])
         self.cbam1 = CBAM(64)
         self.body2 = nn.Sequential(*[unit_module(b.in_channel, b.depth, b.stride) for b in blocks2])

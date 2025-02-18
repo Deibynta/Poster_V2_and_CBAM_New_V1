@@ -13,6 +13,7 @@ EPOCHS = 15
 LEARNING_RATE = 3.5e-5
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 DATASET_PATH = "/content/drive/My Drive/PosterV2_CBAM/RAF-DB/DATASET"  # Change this to your dataset path
+NUM_CLASSES = 7  # RAF-DB has 7 facial expression classes
 
 # ✅ Data Transforms
 transform = transforms.Compose([
@@ -26,17 +27,25 @@ transform = transforms.Compose([
 train_dataset = ImageFolder(root=os.path.join(DATASET_PATH, "train"), transform=transform)
 test_dataset = ImageFolder(root=os.path.join(DATASET_PATH, "test"), transform=transform)
 
-train_loader = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True, num_workers=4)
-test_loader = DataLoader(test_dataset, batch_size=BATCH_SIZE, shuffle=False, num_workers=4)
+train_loader = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True, num_workers=2)
+test_loader = DataLoader(test_dataset, batch_size=BATCH_SIZE, shuffle=False, num_workers=2)
 
-# ✅ Load MobileFaceNet with CBAM
-model = MobileFaceNet(input_size=[112, 112], embedding_size=512).to(DEVICE)
+# ✅ Load MobileFaceNet with CBAM (with correct embedding size 136)
+model = MobileFaceNet(input_size=[112, 112], embedding_size=136, num_classes=NUM_CLASSES).to(DEVICE)
 
 # ✅ Load Pretrained Weights (Optional, if available)
 pretrained_path = "/content/PosterV2_CBAM_New/models/pretrain/mobilefacenet_model_best.pth"
 if os.path.exists(pretrained_path):
     print(f"Loading pretrained MobileFaceNet weights from {pretrained_path}...")
-    model.load_state_dict(torch.load(pretrained_path, map_location=DEVICE)["state_dict"], strict=False)
+    pretrained_weights = torch.load(pretrained_path, map_location=DEVICE)["state_dict"]
+    model_weights = model.state_dict()
+
+    # Filter out incompatible layers
+    filtered_weights = {k: v for k, v in pretrained_weights.items() if k in model_weights and v.shape == model_weights[k].shape}
+
+    # Load only compatible weights
+    model_weights.update(filtered_weights)
+    model.load_state_dict(model_weights, strict=False)
 
 # ✅ Define Loss and Optimizer
 criterion = nn.CrossEntropyLoss()
@@ -52,7 +61,7 @@ def train():
         for batch_idx, (images, labels) in enumerate(train_loader):
             images, labels = images.to(DEVICE), labels.to(DEVICE)
             optimizer.zero_grad()
-            out3, out4, outputs = model(images)  # Extract final output
+            _, _, outputs = model(images)  # Extract only final classifier output
             loss = criterion(outputs, labels)
             loss.backward()
             optimizer.step()

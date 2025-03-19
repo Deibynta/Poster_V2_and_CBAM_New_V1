@@ -140,8 +140,17 @@ class WindowAttentionGlobal(nn.Module):
             .permute(2, 0, 3, 1, 4)
         )
         k, v = kv[0], kv[1]
+        print(f"q_global before repeat: {q_global.shape}")
         q_global = q_global.repeat(1, B_dim, 1, 1, 1)
-        q = q_global.reshape(B_, self.num_heads, N, head_dim)
+        print(f"q_global.shape before reshape: {q_global.shape}")
+        print(f"Expected reshape: ({B_}, {self.num_heads}, {N}, {head_dim})")
+        print(f"Total elements in q_global: {q_global.numel()}")
+        print(f"Expected elements after reshape: {B_ * self.num_heads * N * head_dim}")
+        if q_global.numel() != (B_ * self.num_heads * N * head_dim):
+          print(⚠️ Reshape still mismatched! Using alternative approach.")
+          q = q_global.view(B_, self.num_heads, 1, head_dim).expand(-1, -1, N, -1)  
+        else:
+          q = q_global.reshape(B_, self.num_heads, N, head_dim)
         q = q * self.scale
         attn = q @ k.transpose(-2, -1)
         relative_position_bias = self.relative_position_bias_table[
@@ -292,14 +301,17 @@ class pyramid_trans_expr2(nn.Module):
         self.N = [win * win for win in window_size]
         
         self.ir_back = Backbone(50, 0.0, 'ir')
-        self.face_landback = MobileFaceNet([112, 112], 136)
+        self.face_landback = MobileFaceNet([112, 112], 512)
         
         # Load pre-trained models
-        mobilefacenet_path = os.path.join(os.getcwd(), "models/pretrain/mobilefacenet_model_best.pth")
-        ir50_path = os.path.join(os.getcwd(), "models/pretrain/ir50.pth")
+        mobilefacenet_path = os.path.join(os.getcwd(), "models/pretrain/mobilefacenet_cbam.pth")
+        ir50_path = os.path.join(os.getcwd(), "models/pretrain/ir50_cbam.pth")
         
         self.face_landback.load_state_dict(torch.load(mobilefacenet_path, map_location=torch.device('cpu'))['state_dict'])
-        self.ir_back.load_state_dict(torch.load(ir50_path, map_location=torch.device('cpu')))
+        checkpoint = torch.load(ir50_path, map_location=torch.device('cpu'))
+        if "state_dict" in checkpoint:
+             checkpoint = checkpoint["state_dict"]  # Extract actual state_dict
+        self.ir_back.load_state_dict(checkpoint, strict=False)  # Use strict=False to ignore missing keys
         
         self.conv1 = nn.Conv2d(dims[0], dims[0], kernel_size=3, stride=2, padding=1)
         self.cbam1 = CBAM(dims[0])

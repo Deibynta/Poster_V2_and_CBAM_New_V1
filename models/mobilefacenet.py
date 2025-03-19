@@ -165,26 +165,24 @@ class MobileFaceNet(Module):
                     m.bias.data.zero_()
 
     def forward(self, x):
-        out = self.conv1(x)
-        out = self.conv2_dw(out)
-        out = self.conv_23(out)
+      out = self.conv1(x)
+      out = self.conv2_dw(out)
+      out = self.conv_23(out)
 
-        out3 = self.conv_3(out)
-        out3 = self.cbam_3(out3)
+      out3 = self.conv_3(out)
+      out3 = self.cbam_3(out3)
 
-        out = self.conv_34(out3)
-        out4 = self.conv_4(out)
-        out4 = self.cbam_4(out4)
+      out = self.conv_34(out3)
+      out4 = self.conv_4(out)
+      out4 = self.cbam_4(out4)
 
-        out = self.conv_45(out4)
-        out = self.conv_5(out)
-        out = self.cbam_5(out)
+      out = self.conv_45(out4)
+      out5 = self.conv_5(out)  # ⬅️ Use this as x_face3
+      out5 = self.cbam_5(out5)
 
-        conv_features = self.conv_6_sep(out)
-        out = self.output_layer(conv_features)
+      conv_features = self.conv_6_sep(out5)  # Final feature extraction
+      out = self.output_layer(conv_features)
 
-        # 🔹 Classification output
-        class_output = self.classifier(out)
+      class_output = self.classifier(out)  # Classification output
 
-        return out3, out4, class_output  # Ensure correct shape for CrossEntropyLoss
-
+      return out3, out4, out5  # ⬅️ Fix: return feature maps instead of class_output

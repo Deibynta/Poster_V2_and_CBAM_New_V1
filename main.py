@@ -7,7 +7,7 @@ from PIL import Image
 warnings.filterwarnings("ignore")
 import torch.utils.data as data
 import os
-import argparse
+import argparse 
 from sklearn.metrics import f1_score, confusion_matrix
 from data_preprocessing.sam import SAM
 import torch.nn.parallel
@@ -278,7 +278,15 @@ def main():
         current_learning_rate = optimizer.state_dict()["param_groups"][0]["lr"]
         print("Current learning rate: ", current_learning_rate)
         txt_name = "./log/" + time_str + "log.txt"
+        
+
+        log_dir = "./log"
+        if not os.path.exists(log_dir):
+            os.makedirs(log_dir)  # ✅ Ensures the log directory exists
+
         with open(txt_name, "a") as f:
+            f.write("Log file created successfully!\n")
+
             f.write("Current learning rate: " + str(current_learning_rate) + "\n")
 
         # train for one epoch
@@ -287,6 +295,7 @@ def main():
         )
 
         # evaluate on validation set
+        from validation import validate
         val_acc, val_los, output, target, D = validate(
             val_loader, model, criterion, args
         )

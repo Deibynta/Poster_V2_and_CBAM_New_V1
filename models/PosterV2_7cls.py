@@ -305,7 +305,8 @@ class pyramid_trans_expr2(nn.Module):
         
         # Load pre-trained models
         mobilefacenet_path = os.path.join(os.getcwd(), "models/pretrain/mobilefacenet_cbam.pth")
-        ir50_path = os.path.join(os.getcwd(), "models/pretrain/ir50_cbam.pth")
+        #ir50_path = os.path.join(os.getcwd(), "models/pretrain/ir50_cbam.pth")
+        ir50_path = "/content/drive/MyDrive/Poster_V2_and_CBAM_New_V1-main/ir50_cbam.pth"
         
         self.face_landback.load_state_dict(torch.load(mobilefacenet_path, map_location=torch.device('cpu'))['state_dict'])
         checkpoint = torch.load(ir50_path, map_location=torch.device('cpu'))

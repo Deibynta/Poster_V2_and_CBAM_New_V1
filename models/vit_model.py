@@ -116,12 +116,12 @@ class PatchEmbed(nn.Module):
         self.num_patches = self.grid_size[0] * self.grid_size[1]
 
         self.proj = nn.Conv2d(256, 768, kernel_size=1)
-        self.cbam = CBAM(768)
+        #self.cbam = CBAM(768)
         self.norm = norm_layer(embed_dim) if norm_layer else nn.Identity()
     
     def forward(self, x):
         x = self.proj(x)
-        x = self.cbam(x)  # CBAM applied before flattening
+        #x = self.cbam(x)  # CBAM applied before flattening
         x = x.flatten(2).transpose(1, 2)
         x = self.norm(x)
         return x
@@ -252,7 +252,7 @@ class Block(nn.Module):
         self.img_chanel = in_chans + 1
         self.conv = nn.Conv1d(self.img_chanel, self.img_chanel, 1)
         self.attn = Attention(dim, in_chans=in_chans, num_heads=num_heads, qkv_bias=qkv_bias, qk_scale=qk_scale, attn_drop_ratio=attn_drop_ratio, proj_drop_ratio=drop_ratio)
-        self.cbam = CBAM(dim)
+        #self.cbam = CBAM(dim)
         self.drop_path = DropPath(drop_path_ratio) if drop_path_ratio > 0. else nn.Identity()
         self.norm2 = norm_layer(dim)
         mlp_hidden_dim = int(dim * mlp_ratio)
@@ -261,7 +261,7 @@ class Block(nn.Module):
     def forward(self, x):
         x_img = x
         x_img = x_img + self.drop_path(self.attn(self.norm1(x)))
-        x_img = self.cbam(x_img.unsqueeze(-1).unsqueeze(-1)).squeeze(-1).squeeze(-1)
+        #x_img = self.cbam(x_img.unsqueeze(-1).unsqueeze(-1)).squeeze(-1).squeeze(-1)
         x = x_img + self.drop_path(self.mlp(self.norm2(x_img)))
         return x
 

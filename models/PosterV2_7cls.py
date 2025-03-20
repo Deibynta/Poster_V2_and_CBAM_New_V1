@@ -147,7 +147,7 @@ class WindowAttentionGlobal(nn.Module):
         print(f"Total elements in q_global: {q_global.numel()}")
         print(f"Expected elements after reshape: {B_ * self.num_heads * N * head_dim}")
         if q_global.numel() != (B_ * self.num_heads * N * head_dim):
-          print(⚠️ Reshape still mismatched! Using alternative approach.")
+          print("⚠️ Reshape still mismatched! Using alternative approach.")
           q = q_global.view(B_, self.num_heads, 1, head_dim).expand(-1, -1, N, -1)  
         else:
           q = q_global.reshape(B_, self.num_heads, N, head_dim)

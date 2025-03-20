@@ -52,7 +52,8 @@ parser.add_argument(
 parser.add_argument(
     "--best_checkpoint_path",
     type=str,
-    default="./checkpoint/" + time_str + "raf-db-model_best.pth",
+    #default="./checkpoint/" + time_str + "raf-db-model_best.pth",
+    default="./checkpoint/" + time_str + "/content/drive/MyDrive/Poster_V2_and_CBAM_New_V1-main/raf-db-model_best.pth",
 )
 parser.add_argument(
     "-j",

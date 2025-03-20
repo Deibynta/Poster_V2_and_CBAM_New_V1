@@ -336,7 +336,7 @@ class pyramid_trans_expr2(nn.Module):
         x_face = F.interpolate(x, size=112)
         x_face1, x_face2, x_face3 = self.face_landback(x_face)
         x_ir1, x_ir2, x_ir3 = self.ir_back(x)
-        
+        '''
         #x_ir1, x_ir2, x_ir3 = self.cbam1(self.conv1(x_ir1)), self.cbam2(self.conv2(x_ir2)), self.cbam3(self.conv3(x_ir3))
         x_window1, shortcut1 = self.window1(x_ir1)
         x_window2, shortcut2 = self.window2(x_ir2)
@@ -350,6 +350,49 @@ class pyramid_trans_expr2(nn.Module):
         o1, o2, o3 = self.embed_q(o1).flatten(2).transpose(1, 2), self.embed_k(o2).flatten(2).transpose(1, 2), self.embed_v(o3)
         o = torch.cat([o1, o2, o3], dim=1)
         
+        out = self.VIT(o)'''
+
+                x_face1, x_face2, x_face3 = (
+            _to_channel_last(x_face1),
+            _to_channel_last(x_face2),
+            _to_channel_last(x_face3),
+        )
+
+        q1, q2, q3 = (
+            _to_query(x_face1, self.N[0], self.num_heads[0], self.dim_head[0]),
+            _to_query(x_face2, self.N[1], self.num_heads[1], self.dim_head[1]),
+            _to_query(x_face3, self.N[2], self.num_heads[2], self.dim_head[2]),
+        )
+
+        x_ir1, x_ir2, x_ir3 = self.ir_back(x)
+
+        x_ir1, x_ir2, x_ir3 = self.conv1(x_ir1), self.conv2(x_ir2), self.conv3(x_ir3)
+        x_window1, shortcut1 = self.window1(x_ir1)
+        x_window2, shortcut2 = self.window2(x_ir2)
+        x_window3, shortcut3 = self.window3(x_ir3)
+
+        o1, o2, o3 = (
+            self.attn1(x_window1, q1),
+            self.attn2(x_window2, q2),
+            self.attn3(x_window3, q3),
+        )
+
+        o1, o2, o3 = (
+            self.ffn1(o1, shortcut1),
+            self.ffn2(o2, shortcut2),
+            self.ffn3(o3, shortcut3),
+        )
+
+        o1, o2, o3 = _to_channel_first(o1), _to_channel_first(o2), _to_channel_first(o3)
+
+        o1, o2, o3 = (
+            self.embed_q(o1).flatten(2).transpose(1, 2),
+            self.embed_k(o2).flatten(2).transpose(1, 2),
+            self.embed_v(o3),
+        )
+
+        o = torch.cat([o1, o2, o3], dim=1)
+
         out = self.VIT(o)
         return out
     

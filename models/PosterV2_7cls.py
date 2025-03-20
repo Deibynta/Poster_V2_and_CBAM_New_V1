@@ -352,7 +352,7 @@ class pyramid_trans_expr2(nn.Module):
         
         out = self.VIT(o)'''
 
-                x_face1, x_face2, x_face3 = (
+        x_face1, x_face2, x_face3 = (
             _to_channel_last(x_face1),
             _to_channel_last(x_face2),
             _to_channel_last(x_face3),

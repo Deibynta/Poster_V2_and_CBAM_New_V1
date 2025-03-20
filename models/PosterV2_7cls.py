@@ -337,13 +337,13 @@ class pyramid_trans_expr2(nn.Module):
         x_face1, x_face2, x_face3 = self.face_landback(x_face)
         x_ir1, x_ir2, x_ir3 = self.ir_back(x)
         
-        x_ir1, x_ir2, x_ir3 = self.cbam1(self.conv1(x_ir1)), self.cbam2(self.conv2(x_ir2)), self.cbam3(self.conv3(x_ir3))
+        #x_ir1, x_ir2, x_ir3 = self.cbam1(self.conv1(x_ir1)), self.cbam2(self.conv2(x_ir2)), self.cbam3(self.conv3(x_ir3))
         x_window1, shortcut1 = self.window1(x_ir1)
         x_window2, shortcut2 = self.window2(x_ir2)
         x_window3, shortcut3 = self.window3(x_ir3)
         
         o1, o2, o3 = self.attn1(x_window1, x_face1), self.attn2(x_window2, x_face2), self.attn3(x_window3, x_face3)
-        o1, o2, o3 = self.cbam_window1(o1), self.cbam_window2(o2), self.cbam_window3(o3)
+        #o1, o2, o3 = self.cbam_window1(o1), self.cbam_window2(o2), self.cbam_window3(o3)
         
         o1, o2, o3 = _to_channel_first(o1), _to_channel_first(o2), _to_channel_first(o3)
         

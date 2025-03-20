@@ -170,15 +170,15 @@ class MobileFaceNet(Module):
       out = self.conv_23(out)
 
       out3 = self.conv_3(out)
-      out3 = self.cbam_3(out3)
+      #out3 = self.cbam_3(out3)
 
       out = self.conv_34(out3)
       out4 = self.conv_4(out)
-      out4 = self.cbam_4(out4)
+      #out4 = self.cbam_4(out4)
 
       out = self.conv_45(out4)
       out5 = self.conv_5(out)  # ⬅️ Use this as x_face3
-      out5 = self.cbam_5(out5)
+      #out5 = self.cbam_5(out5)
 
       conv_features = self.conv_6_sep(out5)  # Final feature extraction
       out = self.output_layer(conv_features)

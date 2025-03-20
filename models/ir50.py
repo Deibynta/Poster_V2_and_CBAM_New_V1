@@ -160,21 +160,21 @@ class Backbone(Module):
         print("blocks1:", blocks1)
         print("blocks1 type:", type(blocks1))
         self.body1 = nn.Sequential(*[unit_module(b.in_channel, b.depth, b.stride) for b in blocks1])
-        self.cbam1 = CBAM(64)
+        #self.cbam1 = CBAM(64)
         self.body2 = nn.Sequential(*[unit_module(b.in_channel, b.depth, b.stride) for b in blocks2])
-        self.cbam2 = CBAM(128)
+        #self.cbam2 = CBAM(128)
         self.body3 = nn.Sequential(*[unit_module(b.in_channel, b.depth, b.stride) for b in blocks3])
-        self.cbam3 = CBAM(256)
+        #self.cbam3 = CBAM(256)
 
     def forward(self, x):
         x = F.interpolate(x, size=112)
         x = self.input_layer(x)
         x1 = self.body1(x)
-        x1 = self.cbam1(x1)
+        #x1 = self.cbam1(x1)
         x2 = self.body2(x1)
-        x2 = self.cbam2(x2)
+        #x2 = self.cbam2(x2)
         x3 = self.body3(x2)
-        x3 = self.cbam3(x3)
+        #x3 = self.cbam3(x3)
         
         return x1, x2, x3
 

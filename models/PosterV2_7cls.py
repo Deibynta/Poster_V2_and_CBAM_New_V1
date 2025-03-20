@@ -314,22 +314,22 @@ class pyramid_trans_expr2(nn.Module):
         self.ir_back.load_state_dict(checkpoint, strict=False)  # Use strict=False to ignore missing keys
         
         self.conv1 = nn.Conv2d(dims[0], dims[0], kernel_size=3, stride=2, padding=1)
-        self.cbam1 = CBAM(dims[0])
+        #self.cbam1 = CBAM(dims[0])
         self.conv2 = nn.Conv2d(dims[1], dims[1], kernel_size=3, stride=2, padding=1)
-        self.cbam2 = CBAM(dims[1])
+        #self.cbam2 = CBAM(dims[1])
         self.conv3 = nn.Conv2d(dims[2], dims[2], kernel_size=3, stride=2, padding=1)
-        self.cbam3 = CBAM(dims[2])
+        #self.cbam3 = CBAM(dims[2])
         
         self.attn1 = WindowAttentionGlobal(dim=dims[0], num_heads=num_heads[0], window_size=window_size[0])
         self.attn2 = WindowAttentionGlobal(dim=dims[1], num_heads=num_heads[1], window_size=window_size[1])
         self.attn3 = WindowAttentionGlobal(dim=dims[2], num_heads=num_heads[2], window_size=window_size[2])
         
         self.window1 = window(window_size=window_size[0], dim=dims[0])
-        self.cbam_window1 = CBAM(dims[0])
+        #self.cbam_window1 = CBAM(dims[0])
         self.window2 = window(window_size=window_size[1], dim=dims[1])
-        self.cbam_window2 = CBAM(dims[1])
+        #self.cbam_window2 = CBAM(dims[1])
         self.window3 = window(window_size=window_size[2], dim=dims[2])
-        self.cbam_window3 = CBAM(dims[2])
+        #self.cbam_window3 = CBAM(dims[2])
         
     def forward(self, x):
         x_face = F.interpolate(x, size=112)
